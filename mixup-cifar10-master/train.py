@@ -21,6 +21,7 @@ import torchvision.datasets as datasets
 
 import models
 from utils import progress_bar
+from randaugment import RandAugment
 
 parser = argparse.ArgumentParser(description='PyTorch Fashion_MNIST Training')
 parser.add_argument('--lr', default=0.1, type=float, help='learning rate')
@@ -38,11 +39,16 @@ parser.add_argument('--no-augment', dest='augment', action='store_false',
 parser.add_argument('--decay', default=1e-4, type=float, help='weight decay')
 parser.add_argument('--alpha', default=1., type=float,
                     help='mixup interpolation coefficient (default: 1)')
+parser.add_argument('--N', default=3, type=int,
+                    help='number of RandAugment operations (default: 3)')
+parser.add_argument('--M', default=5, type=int,
+                    help='magnitude of RandAugment operations (default: 5)')
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
 
 best_acc = 0  # best test accuracy
+best_val_acc = 0  # best test accuracy
 start_epoch = 0  # start from epoch 0 or last checkpoint epoch
 
 if args.seed != 0:
@@ -52,6 +58,7 @@ if args.seed != 0:
 print('==> Preparing data..')
 if args.augment:
     transform_train = transforms.Compose([
+        RandAugment(args.N, args.M),
         transforms.RandomCrop(28, padding=4),
         transforms.RandomHorizontalFlip(),
         transforms.ToTensor(),
@@ -70,20 +77,20 @@ transform_test = transforms.Compose([
 ])
 
 trainset = datasets.FashionMNIST(root='~/data', train=True, download=True,
-                            transform=transform_train)
-                            
-# trainset, valset = torch.utils.data.random_split(dataset, [55000, 5000], generator=torch.Generator().manual_seed(20170922))
+                                 transform=transform_train)
+validset = datasets.FashionMNIST(root='~/data', train=True, download=True,
+                                 transform=transform_test)
 
-trainloader = torch.utils.data.DataLoader(trainset,
-                                          batch_size=args.batch_size,
-                                          shuffle=True, num_workers=2)
-                                        
-# valloader = torch.utils.data.DataLoader(valset,
-#                                           batch_size=100,
-#                                           shuffle=False, num_workers=2)
+trainset_idx, valset_idx = torch.utils.data.random_split(trainset, [55000, 5000], generator=torch.Generator().manual_seed(args.seed))
+
+trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size,
+                                          num_workers=2, sampler=trainset_idx.indices)
+
+valloader = torch.utils.data.DataLoader(validset, batch_size=100,
+                                        num_workers=2, sampler=valset_idx.indices)
 
 testset = datasets.FashionMNIST(root='~/data', train=False, download=True,
-                           transform=transform_test)
+                                transform=transform_test)
 testloader = torch.utils.data.DataLoader(testset, batch_size=100,
                                          shuffle=False, num_workers=2)
 
@@ -201,13 +208,14 @@ def test(epoch):
                         correct, total))
     acc = 100.*correct/total
     if epoch == start_epoch + args.epoch - 1 or acc > best_acc:
-        checkpoint(acc, epoch)
+        checkpoint(acc, epoch, 'test')
     if acc > best_acc:
         best_acc = acc
     return (test_loss/batch_idx, 100.*correct/total)
-    
+
+
 def val(epoch):
-    global best_acc
+    global best_val_acc
     net.eval()
     val_loss = 0
     correct = 0
@@ -229,14 +237,14 @@ def val(epoch):
                      % (val_loss/(batch_idx+1), 100.*correct/total,
                         correct, total))
     acc = 100.*correct/total
-    if epoch == start_epoch + args.epoch - 1 or acc > best_acc:
-        checkpoint(acc, epoch)
-    if acc > best_acc:
-        best_acc = acc
+    if epoch == start_epoch + args.epoch - 1 or acc > best_val_acc:
+        checkpoint(acc, epoch, 'valid')
+    if acc > best_val_acc:
+        best_val_acc = acc
     return (val_loss/batch_idx, 100.*correct/total)
 
 
-def checkpoint(acc, epoch):
+def checkpoint(acc, epoch, dataset_type):
     # Save checkpoint.
     print('Saving..')
     state = {
@@ -248,7 +256,7 @@ def checkpoint(acc, epoch):
     if not os.path.isdir('checkpoint'):
         os.mkdir('checkpoint')
     torch.save(state, './checkpoint/ckpt.t7' + args.name + '_'
-               + str(args.seed))
+               + str(args.seed) + '_' + dataset_type)
 
 
 def adjust_learning_rate(optimizer, epoch):
@@ -270,13 +278,13 @@ if not os.path.exists(logname):
 
 for epoch in range(start_epoch, args.epoch):
     train_loss, reg_loss, train_acc = train(epoch)
+    val_loss, val_acc = val(epoch)
     test_loss, test_acc = test(epoch)
-    # val(epoch)
     # test_loss, test_acc = 0
     # if epoch >= 10:
     #     test_loss, test_acc = test(epoch)
     adjust_learning_rate(optimizer, epoch)
     with open(logname, 'a') as logfile:
         logwriter = csv.writer(logfile, delimiter=',')
-        logwriter.writerow([epoch, train_loss, reg_loss, train_acc, test_loss,
-                            test_acc])
+        logwriter.writerow([epoch, train_loss, reg_loss, train_acc, val_loss, val_acc,
+                            test_loss, test_acc])
