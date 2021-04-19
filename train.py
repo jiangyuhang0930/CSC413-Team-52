@@ -39,9 +39,9 @@ parser.add_argument('--augment', dest='augment', action='store_true',
 parser.add_argument('--rand-augment', dest='rand_augment', action='store_true',
                     help='use standard augmentation (default: False)')
 parser.add_argument('--decay', default=1e-4, type=float, help='weight decay')
-parser.add_argument('--alpha', default=1., type=float,
+parser.add_argument('--alpha', default=-1., type=float,
                     help='mixup interpolation coefficient (default: 1)')
-parser.add_argument('--N', default=3, type=int,
+parser.add_argument('--N', default=1, type=int,
                     help='number of RandAugment operations (default: 3)')
 parser.add_argument('--M', default=5, type=int,
                     help='magnitude of RandAugment operations (default: 5)')
