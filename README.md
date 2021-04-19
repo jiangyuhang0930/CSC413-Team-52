@@ -7,7 +7,8 @@ This is the code implementation for the CSC413 Final Project for Team 52. Most o
 
 ## Requirements and Installation
 
-To run:
+To run, simply clone this repo and change directory into it. Then:
+
 1. Install requirements using
 ```
 pip install -r requirements.txt
