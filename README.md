@@ -3,7 +3,7 @@ Yu Hang Ian Jian and Salman Shahid
 
 ## Introduction
 
-This is the code implementation for the CSC413 Final Project for Team 52. Most of the code for model training and applying Mixup is taken from https://github.com/facebookresearch/mixup-cifar10. The code for RandAugment and the common image transformations used in it is taken from https://github.com/ildoonet/pytorch-randaugment. Our contributions were to add a train-validation split, enable training on datasets with images with a variable number of channels besides just RGB, and run Mixup and RandAugment together.
+This is the code implementation for the CSC413 Final Project for Team 52. Most of the code for model training and applying Mixup is taken from the original implementation of Mixup: https://github.com/facebookresearch/mixup-cifar10. The code for RandAugment is taken from https://github.com/ildoonet/pytorch-randaugment, a PyTorch re-implementation of RandAugment. Our contributions were to add a train-validation split, enable training on datasets with images with a variable number of channels besides just RGB, and run Mixup and RandAugment together.
 
 ## Requirements and Installation
 
