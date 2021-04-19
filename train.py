@@ -34,8 +34,10 @@ parser.add_argument('--seed', default=0, type=int, help='random seed')
 parser.add_argument('--batch-size', default=128, type=int, help='batch size')
 parser.add_argument('--epoch', default=200, type=int,
                     help='total epochs to run')
-parser.add_argument('--no-augment', dest='augment', action='store_false',
-                    help='use standard augmentation (default: True)')
+parser.add_argument('--augment', dest='augment', action='store_true',
+                    help='use standard augmentation (default: False)')
+parser.add_argument('--rand-augment', dest='rand_augment', action='store_true',
+                    help='use standard augmentation (default: False)')
 parser.add_argument('--decay', default=1e-4, type=float, help='weight decay')
 parser.add_argument('--alpha', default=1., type=float,
                     help='mixup interpolation coefficient (default: 1)')
@@ -56,20 +58,18 @@ if args.seed != 0:
 
 # Data
 print('==> Preparing data..')
-if args.augment:
-    transform_train = transforms.Compose([
-        RandAugment(args.N, args.M),
-        transforms.RandomCrop(28, padding=4),
-        transforms.RandomHorizontalFlip(),
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,),)
-    ])
-else:
-    transform_train = transforms.Compose([
-        transforms.ToTensor(),
-        transforms.Normalize((0.5,), (0.5,),)
-    ])
 
+transform_train = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize((0.5,), (0.5,),)
+])
+
+if args.rand_augment:
+    transform_train.transforms.insert(0, RandAugment(args.N, args.M))
+
+if args.augment:
+    transform_train.transforms.insert(0, transforms.RandomCrop(28, padding=4))
+    transform_train.transforms.insert(1, transforms.RandomHorizontalFlip())
 
 transform_test = transforms.Compose([
     transforms.ToTensor(),
@@ -78,10 +78,12 @@ transform_test = transforms.Compose([
 
 trainset = datasets.FashionMNIST(root='~/data', train=True, download=True,
                                  transform=transform_train)
+
 validset = datasets.FashionMNIST(root='~/data', train=True, download=True,
                                  transform=transform_test)
 
-trainset_idx, valset_idx = torch.utils.data.random_split(trainset, [55000, 5000], generator=torch.Generator().manual_seed(args.seed))
+trainset_idx, valset_idx = torch.utils.data.random_split(
+    trainset, [55000, 5000], generator=torch.Generator().manual_seed(args.seed))
 
 trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size,
                                           num_workers=2, sampler=trainset_idx.indices)
@@ -89,8 +91,10 @@ trainloader = torch.utils.data.DataLoader(trainset, batch_size=args.batch_size,
 valloader = torch.utils.data.DataLoader(validset, batch_size=100,
                                         num_workers=2, sampler=valset_idx.indices)
 
+
 testset = datasets.FashionMNIST(root='~/data', train=False, download=True,
                                 transform=transform_test)
+
 testloader = torch.utils.data.DataLoader(testset, batch_size=100,
                                          shuffle=False, num_workers=2)
 
