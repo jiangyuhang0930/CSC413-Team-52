@@ -1,5 +1,5 @@
 # CSC413 Team 52
-Yu Hang Ian Jian and Salman Shahid
+Yu Hang Ian Jiang and Salman Shahid
 
 ## Introduction
 
