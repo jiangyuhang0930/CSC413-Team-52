@@ -14,7 +14,7 @@ To run, simply clone this repo and change directory into it. Then:
 pip install -r requirements.txt
 ```
 
-2. Run using the command below. For reproducibility, we used the seed given below in our experiments. To use Mixup, specify the desired value of alpha, such as --alpha=1. To use RandAugment, specify the RandAugment flag and set the desired values of N and M, like so: --rand-augment --N=1 --M=5
+2. Run using the command below. For reproducibility, we used the seed given below in our experiments. To use Mixup, specify the desired value of alpha, such as **--alpha=1**. To use RandAugment, specify the RandAugment flag and set the desired values of N and M, like so: **--rand-augment --N=1 --M=5**
 ```
 $ CUDA_VISIBLE_DEVICES=0 python train.py --lr=0.1 --seed=20170922 --decay=1e-4
 ```
