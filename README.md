@@ -1,49 +1,19 @@
-# Mixup-CIFAR10
-By [Hongyi Zhang](http://web.mit.edu/~hongyiz/www/), [Moustapha Cisse](https://mine.kaust.edu.sa/Pages/cisse.aspx), [Yann Dauphin](http://dauphin.io/), [David Lopez-Paz](https://lopezpaz.org/).
-
-Facebook AI Research
+# CSC413 Team 52
+Yu Hang Ian Jian and Salman Shahid
 
 ## Introduction
 
-Mixup is a generic and straightforward data augmentation principle.
-In essence, mixup trains a neural network on convex combinations of pairs of
-examples and their labels. By doing so, mixup regularizes the neural network to
-favor simple linear behavior in-between training examples.
-
-This repository contains the implementation used for the results in
-our paper (https://arxiv.org/abs/1710.09412).
-
-## Citation
-
-If you use this method or this code in your paper, then please cite it:
-
-```
-@article{
-zhang2018mixup,
-title={mixup: Beyond Empirical Risk Minimization},
-author={Hongyi Zhang, Moustapha Cisse, Yann N. Dauphin, David Lopez-Paz},
-journal={International Conference on Learning Representations},
-year={2018},
-url={https://openreview.net/forum?id=r1Ddp1-Rb},
-}
-```
+This is the code implementation for the CSC413 Final Project for Team 52. Most of the code for model training and applying Mixup is taken from https://github.com/facebookresearch/mixup-cifar10. The code for RandAugment and the common image transformations used in it is taken from https://github.com/ildoonet/pytorch-randaugment. Our contributions were to add a train-validation split, enable training on datasets with images with a variable number of channels besides just RGB, and run Mixup and RandAugment together.
 
 ## Requirements and Installation
-* A computer running macOS or Linux
-* For training new models, you'll also need a NVIDIA GPU and [NCCL](https://github.com/NVIDIA/nccl)
-* Python version 3.6
-* A [PyTorch installation](http://pytorch.org/)
 
-## Training
-Use `python train.py` to train a new model.
-Here is an example setting:
+To run:
+1. Install requirements using
+```
+pip install -r requirements.txt
+```
+
+2. Run using the command below. For reproducibility, we used the seed given below in our experiments. To use Mixup, specify the desired value of alpha, such as --alpha=1. To use RandAugment, specify the RandAugment flag and set the desired values of N and M, like so: --rand-augment --N=1 --M=5
 ```
 $ CUDA_VISIBLE_DEVICES=0 python train.py --lr=0.1 --seed=20170922 --decay=1e-4
 ```
-
-## License
-
-This project is CC-BY-NC-licensed.
-
-## Acknowledgement
-The CIFAR-10 reimplementation of _mixup_ is adapted from the [pytorch-cifar](https://github.com/kuangliu/pytorch-cifar) repository by [kuangliu](https://github.com/kuangliu).
